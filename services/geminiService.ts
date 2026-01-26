@@ -3,7 +3,7 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { QuizSettings, Question } from "../types";
 
 export const generateQuestions = async (settings: QuizSettings): Promise<Question[]> => {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
   
   const textPrompt = `
     Hãy đóng vai một chuyên gia giáo dục bậc phổ thông tại Việt Nam cho Lớp: ${settings.grade}, môn: ${settings.subject}. 
