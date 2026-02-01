@@ -6,9 +6,8 @@ import ResultView from './components/ResultView';
 import TeacherDashboard from './components/TeacherDashboard';
 import Login from './components/Login';
 import AdminSettings from './components/AdminSettings';
-import NotificationCenter from './components/NotificationCenter';
 import { generateMathQuiz } from './services/geminiService';
-import { AppState, Question, UserAnswer, QuizSettings, User, AVAILABLE_SUBJECTS, AppSettings, QuizResultNotification, DifficultyLevel } from './types';
+import { AppState, Question, UserAnswer, QuizSettings, User, AVAILABLE_SUBJECTS, AppSettings, DifficultyLevel } from './types';
 
 const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -17,7 +16,6 @@ const App: React.FC = () => {
   const [userAnswers, setUserAnswers] = useState<UserAnswer[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [library, setLibrary] = useState<Question[]>([]);
-  const [notifications, setNotifications] = useState<QuizResultNotification[]>([]);
   
   const [appSettings, setAppSettings] = useState<AppSettings>({
     appName: 'THCS TTGL',
@@ -43,11 +41,6 @@ const App: React.FC = () => {
     if (savedSettings) {
       try { setAppSettings(JSON.parse(savedSettings)); } catch (e) { console.error(e); }
     }
-
-    const savedNotifs = localStorage.getItem('thcsttgl_notifications');
-    if (savedNotifs) {
-      try { setNotifications(JSON.parse(savedNotifs)); } catch (e) { console.error(e); }
-    }
   }, []);
 
   const saveLibrary = (newLib: Question[]) => {
@@ -59,11 +52,6 @@ const App: React.FC = () => {
     setAppSettings(newSettings);
     localStorage.setItem('thcsttgl_settings', JSON.stringify(newSettings));
     setState(AppState.HOME);
-  };
-
-  const saveNotifications = (newNotifs: QuizResultNotification[]) => {
-    setNotifications(newNotifs);
-    localStorage.setItem('thcsttgl_notifications', JSON.stringify(newNotifs));
   };
 
   const startQuiz = async () => {
@@ -98,36 +86,6 @@ const App: React.FC = () => {
     setState(AppState.RESULT);
   };
 
-  const sendResultToTeacher = (score: number, total: number) => {
-    if (!user || !user.teacherId) return;
-    
-    // Nếu là AI chọn chủ đề ngẫu nhiên, ta ghi là 'Kiến thức tổng hợp'
-    const displayTopic = settings.topic || 'Kiến thức tổng hợp';
-
-    const newNotif: QuizResultNotification = {
-      id: Date.now().toString(),
-      studentName: user.fullName,
-      studentId: user.username,
-      teacherId: user.teacherId,
-      subject: settings.subject,
-      topic: displayTopic,
-      score,
-      total,
-      timestamp: Date.now(),
-      read: false
-    };
-    saveNotifications([newNotif, ...notifications]);
-  };
-
-  const markNotificationAsRead = (id: string) => {
-    saveNotifications(notifications.map(n => n.id === id ? { ...n, read: true } : n));
-  };
-
-  const clearNotifications = () => {
-    if (isAdmin) saveNotifications([]);
-    else if (user) saveNotifications(notifications.filter(n => n.teacherId !== user.username));
-  };
-
   const reset = () => {
     setState(AppState.HOME);
     setQuestions([]);
@@ -137,12 +95,6 @@ const App: React.FC = () => {
 
   const isAdmin = user?.username === 'admin';
   
-  const userNotifications = isAdmin 
-    ? notifications 
-    : notifications.filter(n => n.teacherId === user?.username);
-  
-  const unreadCount = userNotifications.filter(n => !n.read).length;
-
   const getDifficultyText = (level: DifficultyLevel) => {
     switch (level) {
       case 1: return "Nhận biết";
@@ -159,10 +111,8 @@ const App: React.FC = () => {
         userName={user?.fullName} 
         usernameId={user?.username}
         settings={appSettings}
-        notificationCount={unreadCount}
         onLogout={() => { setUser(null); setState(AppState.LOGIN); reset(); }} 
         onOpenSettings={() => setState(AppState.ADMIN_SETTINGS)}
-        onOpenNotifications={() => setState(AppState.NOTIFICATIONS)}
       />
       
       <main className="flex-grow pt-8 pb-16 px-4">
@@ -173,27 +123,16 @@ const App: React.FC = () => {
         {state === AppState.HOME && user && (
           <div className="max-w-4xl mx-auto animate-in fade-in duration-500">
             {(isAdmin || user.role === 'TEACHER') && (
-              <div className="grid md:grid-cols-2 gap-8 mb-12">
+              <div className="mb-12">
                 <button 
                   onClick={() => setState(AppState.TEACHER_DASHBOARD)}
-                  className="group p-8 bg-white border-2 border-blue-50 rounded-3xl shadow-xl hover:border-blue-500 transition-all hover:-translate-y-2 flex flex-col items-center text-center"
+                  className="group w-full max-w-sm mx-auto p-8 bg-white border-2 border-blue-50 rounded-3xl shadow-xl hover:border-blue-500 transition-all hover:-translate-y-2 flex flex-col items-center text-center"
                 >
                   <div className="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center mb-4 group-hover:bg-blue-600 transition-colors">
                     <svg className="w-8 h-8 text-blue-600 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
                   </div>
-                  <h3 className="text-xl font-bold text-slate-800">Thư viện trường</h3>
-                  <p className="text-slate-500 text-sm mt-1">Quản lý kho câu hỏi dữ liệu trường.</p>
-                </button>
-                <button 
-                  onClick={() => setState(AppState.NOTIFICATIONS)}
-                  className="group p-8 bg-indigo-50 border-2 border-indigo-100 rounded-3xl shadow-xl transition-all hover:-translate-y-2 flex flex-col items-center text-center relative"
-                >
-                  {unreadCount > 0 && <span className="absolute top-4 right-4 w-6 h-6 bg-red-500 text-white text-xs flex items-center justify-center rounded-full font-black animate-pulse">{unreadCount}</span>}
-                  <div className="w-16 h-16 bg-indigo-200 rounded-2xl flex items-center justify-center mb-4 group-hover:bg-indigo-600 transition-colors">
-                    <svg className="w-8 h-8 text-indigo-700 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
-                  </div>
-                  <h3 className="text-xl font-bold text-indigo-900">Thông báo học sinh</h3>
-                  <p className="text-indigo-400 text-sm mt-1">Xem kết quả bài làm học sinh gửi về.</p>
+                  <h3 className="text-xl font-bold text-slate-800">Thư viện câu hỏi</h3>
+                  <p className="text-slate-500 text-sm mt-1">Quản lý kho dữ liệu bài tập trường.</p>
                 </button>
               </div>
             )}
@@ -242,7 +181,6 @@ const App: React.FC = () => {
                     <input type="text" placeholder="Để trống để AI tự động chọn ngẫu nhiên" value={settings.topic} onChange={(e) => setSettings({...settings, topic: e.target.value})} className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-4 py-3 outline-none focus:border-blue-500 font-medium italic placeholder:text-slate-300" />
                   </div>
 
-                  {/* Difficulty Selection */}
                   <div className="space-y-2">
                     <label className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Độ khó mong muốn</label>
                     <div className="flex items-center space-x-2">
@@ -293,10 +231,6 @@ const App: React.FC = () => {
           <AdminSettings settings={appSettings} onSave={saveAppSettings} onBack={() => setState(AppState.HOME)} />
         )}
 
-        {state === AppState.NOTIFICATIONS && (isAdmin || user?.role === 'TEACHER') && (
-          <NotificationCenter notifications={userNotifications} onBack={() => setState(AppState.HOME)} onClear={clearNotifications} onMarkRead={markNotificationAsRead} />
-        )}
-
         {state === AppState.GENERATING && (
           <div className="flex flex-col items-center justify-center min-h-[50vh] animate-pulse">
             <div className="w-20 h-20 bg-blue-100 rounded-3xl flex items-center justify-center mb-6 animate-bounce">
@@ -317,7 +251,6 @@ const App: React.FC = () => {
             userAnswers={userAnswers} 
             currentUser={user}
             onRestart={reset} 
-            onSendResult={sendResultToTeacher}
           />
         )}
       </main>

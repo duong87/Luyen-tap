@@ -2,7 +2,8 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { Question, QuizSettings, DifficultyLevel } from "../types";
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
+// Correctly initialize with process.env.API_KEY as per named parameter requirement
+const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 const getDifficultyLabel = (level: DifficultyLevel): string => {
   switch (level) {
@@ -103,7 +104,8 @@ export const generateMathQuiz = async (settings: QuizSettings): Promise<Question
   });
 
   try {
-    const jsonStr = response.text;
+    // Access .text property directly as per guidelines
+    const jsonStr = response.text || "[]";
     const parsedQuestions = JSON.parse(jsonStr);
     return parsedQuestions.map((q: any) => ({ 
       ...q, 

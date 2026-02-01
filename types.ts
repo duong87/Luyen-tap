@@ -7,7 +7,8 @@ export interface User {
   username: string;
   role: UserRole;
   fullName: string;
-  teacherId?: string; // ID của giáo viên phụ trách (dành cho học sinh)
+  // Added optional teacherId to fix authService.ts error
+  teacherId?: string;
 }
 
 export interface AppSettings {
@@ -22,7 +23,7 @@ export interface Question {
   options: string[];
   correctAnswerIndex: number;
   explanation: string;
-  diagram?: string; // Trường mới chứa mã SVG minh họa
+  diagram?: string;
   grade?: number;
   topic?: string;
   subject?: string;
@@ -34,11 +35,10 @@ export interface UserAnswer {
   selectedIndex: number;
 }
 
+// Added QuizResultNotification to fix NotificationCenter.tsx error
 export interface QuizResultNotification {
   id: string;
   studentName: string;
-  studentId: string;
-  teacherId: string;
   subject: string;
   topic: string;
   score: number;
@@ -54,8 +54,7 @@ export enum AppState {
   QUIZ = 'QUIZ',
   RESULT = 'RESULT',
   TEACHER_DASHBOARD = 'TEACHER_DASHBOARD',
-  ADMIN_SETTINGS = 'ADMIN_SETTINGS',
-  NOTIFICATIONS = 'NOTIFICATIONS'
+  ADMIN_SETTINGS = 'ADMIN_SETTINGS'
 }
 
 export interface QuizSettings {

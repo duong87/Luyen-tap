@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Question, UserAnswer, User } from '../types';
 
 interface ResultViewProps {
@@ -7,21 +7,14 @@ interface ResultViewProps {
   userAnswers: UserAnswer[];
   currentUser: User | null;
   onRestart: () => void;
-  onSendResult: (score: number, total: number) => void;
 }
 
-const ResultView: React.FC<ResultViewProps> = ({ questions, userAnswers, currentUser, onRestart, onSendResult }) => {
-  const [hasSent, setHasSent] = useState(false);
+const ResultView: React.FC<ResultViewProps> = ({ questions, userAnswers, currentUser, onRestart }) => {
   const score = userAnswers.filter(
     (ans, idx) => ans.selectedIndex === questions[idx].correctAnswerIndex
   ).length;
 
   const percentage = Math.round((score / questions.length) * 100);
-
-  const handleSendResult = () => {
-    onSendResult(score, questions.length);
-    setHasSent(true);
-  };
 
   return (
     <div className="max-w-3xl mx-auto p-4 animate-in zoom-in duration-300">
@@ -30,8 +23,8 @@ const ResultView: React.FC<ResultViewProps> = ({ questions, userAnswers, current
           <div className="inline-block p-4 rounded-full bg-white/20 backdrop-blur-md mb-6">
             <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
           </div>
-          <h2 className="text-3xl font-bold mb-2">Kết quả bài làm</h2>
-          <p className="text-blue-100 text-lg opacity-90">Cố gắng rất tốt! Dưới đây là kết quả chi tiết.</p>
+          <h2 className="text-3xl font-bold mb-2">Hoàn thành bài luyện tập!</h2>
+          <p className="text-blue-100 text-lg opacity-90">Dưới đây là kết quả chi tiết và lời giải từ AI.</p>
           
           <div className="mt-8 grid grid-cols-2 gap-4 max-w-sm mx-auto">
             <div className="bg-white/10 rounded-2xl p-4">
@@ -43,36 +36,10 @@ const ResultView: React.FC<ResultViewProps> = ({ questions, userAnswers, current
               <div className="text-xs uppercase tracking-wider opacity-70">Điểm số</div>
             </div>
           </div>
-
-          {currentUser?.role === 'STUDENT' && currentUser.teacherId && (
-            <div className="mt-8">
-              <button
-                disabled={hasSent}
-                onClick={handleSendResult}
-                className={`px-6 py-3 rounded-2xl font-bold text-sm transition-all flex items-center mx-auto ${
-                  hasSent 
-                  ? 'bg-green-400 text-white cursor-default' 
-                  : 'bg-white text-blue-600 hover:bg-blue-50 shadow-lg active:scale-95'
-                }`}
-              >
-                {hasSent ? (
-                  <>
-                    <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" /></>
-                    Đã gửi cho GV phụ trách
-                  </>
-                ) : (
-                  <>
-                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg>
-                    Gửi kết quả cho Thầy/Cô {currentUser.teacherId}
-                  </>
-                )}
-              </button>
-            </div>
-          )}
         </div>
 
         <div className="p-8">
-          <h3 className="text-xl font-bold text-slate-800 mb-6">Xem lại đáp án</h3>
+          <h3 className="text-xl font-bold text-slate-800 mb-6">Xem lại đáp án & Giải thích</h3>
           <div className="space-y-6">
             {questions.map((q, idx) => {
               const userAns = userAnswers.find(a => a.questionId === q.id);
@@ -85,7 +52,6 @@ const ResultView: React.FC<ResultViewProps> = ({ questions, userAnswers, current
                       {idx + 1}
                     </span>
                     <div className="flex-grow">
-                      {/* Render Diagram in Review if exists - PLACED ABOVE THE TEXT */}
                       {q.diagram && (
                         <div className="mb-4 flex justify-center p-3 bg-slate-50 rounded-xl border border-slate-100 max-w-sm">
                           <div 
@@ -120,7 +86,7 @@ const ResultView: React.FC<ResultViewProps> = ({ questions, userAnswers, current
                   <div className="bg-blue-50/50 p-4 rounded-xl border border-blue-100 pl-4 ml-11">
                     <p className="text-xs font-bold text-blue-600 uppercase mb-1 flex items-center">
                       <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20"><path d="M11 3a1 1 0 10-2 0v1a1 1 0 102 0V3zM15.657 5.757a1 1 0 00-1.414-1.414l-.707.707a1 1 0 001.414 1.414l.707-.707zM18 10a1 1 0 01-1 1h-1a1 1 0 110-2h1a1 1 0 011 1zM5.05 6.464A1 1 0 106.464 5.05l-.707-.707a1 1 0 00-1.414 1.414l.707.707zM5 10a1 1 0 01-1 1H3a1 1 0 110-2h1a1 1 0 011 1zM8 16v-1a1 1 0 112 0v1a1 1 0 11-2 0zM13.536 14.95a1 1 0 010-1.414l.707-.707a1 1 0 011.414 1.414l-.707.707a1 1 0 01-1.414 0zM6.464 14.95a1 1 0 01-1.414 0l-.707-.707a1 1 0 011.414-1.414l.707.707a1 1 0 010 1.414z" /></svg>
-                      Giải thích:
+                      Giải thích Equation:
                     </p>
                     <p className="text-sm text-slate-600 leading-relaxed italic">{q.explanation}</p>
                   </div>
