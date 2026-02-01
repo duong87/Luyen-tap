@@ -1,7 +1,5 @@
 {
-  "name": "SmartLearn THCS Pro",
-  "description": "Ứng dụng hỗ trợ ôn tập thông minh cho học sinh THCS với khả năng tạo câu hỏi trắc nghiệm, đúng/sai và hình ảnh minh họa hình học sử dụng AI.",
-  "requestFramePermissions": [
-    "camera"
-  ]
+  "name": "THCSTTGL-LUYEN TAP",
+  "description": "Ứng dụng kiểm tra trắc nghiệm Toán THCS thông minh, sử dụng Gemini AI để tạo đề bài và giải thích chi tiết.",
+  "requestFramePermissions": []
 }

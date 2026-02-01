@@ -1,45 +1,86 @@
 
-export enum BloomLevel {
-  KNOWLEDGE = 'Nhận biết',
-  COMPREHENSION = 'Thông hiểu',
-  APPLICATION = 'Vận dụng',
-  ANALYSIS = 'Vận dụng cao'
+export type UserRole = 'STUDENT' | 'TEACHER' | null;
+
+export type DifficultyLevel = 1 | 2 | 3 | 4;
+
+export interface User {
+  username: string;
+  role: UserRole;
+  fullName: string;
+  teacherId?: string; // ID của giáo viên phụ trách (dành cho học sinh)
 }
 
-export type QuestionType = 'MCQ' | 'TRUE_FALSE';
-
-export enum Subject {
-  MATH = 'Toán học',
-  LITERATURE = 'Ngữ văn',
-  ENGLISH = 'Tiếng Anh',
-  PHYSICS = 'Vật lý',
-  CHEMISTRY = 'Hóa học',
-  BIOLOGY = 'Sinh học',
-  HISTORY = 'Lịch sử',
-  GEOGRAPHY = 'Địa lý'
+export interface AppSettings {
+  appName: string;
+  appSubtitle: string;
+  logoUrl?: string;
 }
 
 export interface Question {
   id: string;
-  type: QuestionType;
   text: string;
   options: string[];
-  correctIndex: number;
+  correctAnswerIndex: number;
   explanation: string;
-  svgCode?: string; // Standard SVG code for complex visualizations
+  diagram?: string; // Trường mới chứa mã SVG minh họa
+  grade?: number;
+  topic?: string;
+  subject?: string;
+  isCustom?: boolean;
 }
 
-export interface QuizSettings {
-  questionCount: number;
-  level: BloomLevel;
-  content: string;
-  subject: Subject;
-  grade: number; // Added grade (1-12)
+export interface UserAnswer {
+  questionId: string;
+  selectedIndex: number;
+}
+
+export interface QuizResultNotification {
+  id: string;
+  studentName: string;
+  studentId: string;
+  teacherId: string;
+  subject: string;
+  topic: string;
+  score: number;
+  total: number;
+  timestamp: number;
+  read: boolean;
 }
 
 export enum AppState {
-  INPUT = 'INPUT',
-  LOADING = 'LOADING',
+  LOGIN = 'LOGIN',
+  HOME = 'HOME',
+  GENERATING = 'GENERATING',
   QUIZ = 'QUIZ',
-  RESULT = 'RESULT'
+  RESULT = 'RESULT',
+  TEACHER_DASHBOARD = 'TEACHER_DASHBOARD',
+  ADMIN_SETTINGS = 'ADMIN_SETTINGS',
+  NOTIFICATIONS = 'NOTIFICATIONS'
 }
+
+export interface QuizSettings {
+  grade: number;
+  topic: string;
+  subject: string;
+  numQuestions: number;
+  source: 'AI' | 'LIBRARY';
+  difficulty: DifficultyLevel;
+}
+
+export const AVAILABLE_SUBJECTS = [
+  'Toán học',
+  'Ngữ văn',
+  'Tiếng Anh',
+  'Vật lí',
+  'Hóa học',
+  'Sinh học',
+  'Lịch sử',
+  'Địa lí',
+  'GDCD',
+  'Tin học',
+  'Công nghệ',
+  'Toán bằng tiếng Anh',
+  'Vật lí bằng tiếng Anh',
+  'Hóa học bằng tiếng Anh',
+  'Sinh học bằng tiếng Anh'
+];
